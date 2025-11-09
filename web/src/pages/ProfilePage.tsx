@@ -7,7 +7,7 @@ export default function ProfilePage(){
   const { user, loading, signInGoogle, signOutUser } = useAuth();
   const nav = useNavigate();
   return (
-    <div className="bg-background-light min-h-screen font-display">
+    <div className="bg-background-light min-h-screen font-display flex flex-col">
       <header className="top-0 z-10 flex items-center p-4 bg-[var(--bg)]/80 backdrop-blur border-b border-[var(--border)]">
         <button onClick={() => nav(-1)} className="h-10 w-10" aria-label="Back">
           <span className="material-symbols-outlined">arrow_back</span>
@@ -16,7 +16,7 @@ export default function ProfilePage(){
         <div className="h-10 w-10" />
       </header>
 
-      <main className="p-4 pb-24">
+      <main className="grid grid-cols-1 p-4 pb-24 flex-1">
         {loading && <div>Loading…</div>}
 
         {!loading && !user && (

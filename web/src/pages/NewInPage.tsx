@@ -19,7 +19,7 @@ export default function NewInPage(){
 
   return (
     <div className="bg-background-light min-h-screen font-display">
-      <header className="top-0 z-10 flex items-center p-4 bg-[var(--bg)]/80 backdrop-blur border-b border-[var(--border)]">
+      <header className="sticky top-0 z-10 flex items-center p-4 bg-[var(--bg)]/80 backdrop-blur border-b border-[var(--border)]">
         <button onClick={() => nav(-1)} className="h-10 w-10" aria-label="Back">
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
