@@ -31,7 +31,7 @@ export const WishlistProvider: React.FC<{children: React.ReactNode}> = ({ childr
       await deleteDoc(ref);
       setIds(prev => prev.filter(x => x !== p.slug));
     } else {
-      await setDoc(ref, { productRef: doc(db, "products", p.id) });
+      await setDoc(ref, { productRef: doc(db, "products", p.id as string) });
       setIds(prev => [...prev, p.slug]);
     }
   };

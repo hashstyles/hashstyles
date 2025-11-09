@@ -1,12 +1,13 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useWishlist } from "../store/wishlist";
 import BottomNav from "../components/BottomNav";
+import type { Product } from "../types/product";
 
 export default function WishlistPage() {
   // be defensive if provider/store hasn't populated yet
   const wl = useWishlist(); // could be undefined in edge cases
-  const items = wl?.items ?? [];
+  type WLItem = { product: Product };
+  const items: WLItem[] = (wl as any)?.items ?? [];
   const nav = useNavigate();
 
   return (

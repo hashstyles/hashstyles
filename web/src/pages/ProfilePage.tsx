@@ -1,4 +1,3 @@
-import React from "react";
 import { useAuth } from "../context/AuthProvider";
 import { Link, useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";

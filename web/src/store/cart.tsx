@@ -12,6 +12,7 @@ import {
   getDocs,
   serverTimestamp,
 } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 type CartItem = { product: Product; size?: string; qty: number };
 
@@ -38,6 +39,7 @@ const lineId = (slug: string, size?: string) => (size ? `${slug}__${size}` : slu
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const nav = useNavigate();
   const [items, setItems] = useState<CartItem[]>([]);
 
   // Load cart from Firestore whenever user changes
@@ -51,7 +53,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const rows: CartItem[] = [];
       for (const d of snap.docs) {
         const data = d.data() as any;
-        // productRef must be a DocumentReference to /products/{id}
         const pref = data.productRef ? await getDoc(data.productRef) : null;
         if (pref && pref.exists()) {
           rows.push({
@@ -65,11 +66,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })();
   }, [user?.uid]);
 
-  const requireAuth = () => {
+  // If not signed in, send them to sign-in/profile and return false
+  const ensureAuth = (): boolean => {
     if (!user) {
-      alert("Please sign in to use the cart.");
-      throw new Error("not-authenticated");
+      // change to "/signin" if you have a dedicated sign-in route
+      nav("/profile", { replace: true });
+      return false;
     }
+    return true;
   };
 
   const writeMerge = async (
@@ -77,7 +81,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     size: string | undefined,
     data: Record<string, any>
   ) => {
-    requireAuth();
+    if (!ensureAuth()) return;
     const id = lineId(slug, size);
     const ref = doc(db, "users", user!.uid, "cart", id);
     await setDoc(
@@ -92,7 +96,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const add: CartCtx["add"] = async (p, size, qty = 1) => {
-    requireAuth();
+    if (!ensureAuth()) return;
 
     const id = lineId(p.slug, size);
     const ref = doc(db, "users", user!.uid, "cart", id);
@@ -101,12 +105,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const snap = await getDoc(ref);
     const prevQty = snap.exists() ? Number((snap.data() as any).qty || 0) : 0;
     const newQty = prevQty + qty;
-    console.log("[Cart.add] uid", user?.uid, "path", `users/${user?.uid}/cart/${id}`);
 
     await setDoc(
       ref,
       {
-        productRef: doc(db, "products", p.id),
+        productRef: doc(db, "products", p.id as string),
         qty: newQty,
         size: size ?? null,
         addedAt: snap.exists() ? (snap.data() as any).addedAt ?? serverTimestamp() : serverTimestamp(),
@@ -128,18 +131,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const remove: CartCtx["remove"] = async (slug, size) => {
-    requireAuth();
+    if (!ensureAuth()) return;
     const id = lineId(slug, size);
     try {
       await deleteDoc(doc(db, "users", user!.uid, "cart", id));
-    } catch(e) {
+    } catch (e) {
       console.error("[Cart.remove] failed", id, e);
     }
     setItems((prev) => prev.filter((x) => !(x.product.slug === slug && x.size === size)));
   };
 
   const inc: CartCtx["inc"] = async (slug, size) => {
-    requireAuth();
+    if (!ensureAuth()) return;
     const id = lineId(slug, size);
     const ref = doc(db, "users", user!.uid, "cart", id);
     const snap = await getDoc(ref);
@@ -154,7 +157,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const dec: CartCtx["dec"] = async (slug, size) => {
-    requireAuth();
+    if (!ensureAuth()) return;
     const id = lineId(slug, size);
     const ref = doc(db, "users", user!.uid, "cart", id);
     const snap = await getDoc(ref);
@@ -169,7 +172,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const clear = async () => {
-    requireAuth();
+    if (!ensureAuth()) return;
     const copy = [...items];
     setItems([]);
     await Promise.all(

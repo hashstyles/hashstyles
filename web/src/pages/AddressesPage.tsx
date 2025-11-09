@@ -85,15 +85,6 @@ function AddressesInner() {
   };
 
   // When a radio/row is chosen
-  const handleChoose = async (addrId: string) => {
-    setSelectedId(addrId);
-    if (selectMode) {
-      // Immediately send choice back to Checkout and go back
-      sessionStorage.setItem("checkout_addr_id", addrId);
-      nav("/checkout", { replace: true });
-    }
-  };
-
   const selectedIsDefault = useMemo(() => {
     if (!selectedId) return false;
     const row = list.find((r) => r.id === selectedId);

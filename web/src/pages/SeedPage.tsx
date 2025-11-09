@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { dummyProducts } from "../data/dummyProducts";
@@ -26,7 +26,7 @@ export default function SeedPage() {
       // Seed products
       for (const p of dummyProducts) {
         await addDoc(collection(db, "products"), {
-          ...p,
+          ...(p as any),
           createdAt: serverTimestamp(),
         });
       }

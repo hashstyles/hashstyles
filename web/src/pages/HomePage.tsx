@@ -1,7 +1,5 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
-import SearchBar from "../components/SearchBar";
 import { db, collection, getDocs, orderBy, query, limit } from "../lib/firestore";
 import { useEffect, useState } from "react";
 import AppHeader from "../components/AppHeader";

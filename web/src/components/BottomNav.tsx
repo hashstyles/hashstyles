@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink } from "react-router-dom";
 
 const base = "flex flex-col items-center gap-1 text-[color:var(--text-secondary)]";

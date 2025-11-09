@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../store/cart";
 import { useAuth } from "../context/AuthProvider";
@@ -97,7 +97,7 @@ export default function CheckoutPage() {
       userId: user.uid,
       orderNumber,            // <-- store the human-readable order no
       items: items.map(i => ({
-        productRef: doc(db, "products", i.product.id),
+        productRef: doc(db, "products", i.product.id as string),
         title: i.product.title,
         slug: i.product.slug,
         price: i.product.price,

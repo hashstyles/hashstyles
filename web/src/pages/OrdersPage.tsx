@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import BottomNav from "../components/BottomNav";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { useAuth } from "../context/AuthProvider";
