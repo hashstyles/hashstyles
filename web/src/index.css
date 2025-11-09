@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+
+  :root{
+    --bg: theme(colors.brand.background);
+    --surface: theme(colors.brand.surface);
+    --border: theme(colors.brand.border);
+    --text-primary: theme(colors.brand.text.primary);
+    --text-secondary: theme(colors.brand.text.secondary);
+  }
+
+  body { @apply bg-[var(--bg)] text-[var(--text-primary)] font-display; }
+  h1,h2,h3,h4 { @apply font-extrabold; }
+  a { @apply text-primary-600; }
+
+  input, select, textarea {
+    @apply bg-white border border-[var(--border)] rounded-xl px-4 h-12
+           placeholder:text-[color:var(--text-secondary)] outline-none
+           focus:ring-2 focus:ring-primary-200;
+  }
+  button { @apply rounded-xl; }
+}
+
+@layer utilities {
+  .bg-background-light { background-color: var(--bg); }
+  .bg-subtle-light { @apply bg-white; }
+  .bg-subtle-dark  { @apply bg-zinc-900; }
+  .text-text-light { color: var(--text-primary); }
+  .text-text-dark  { color: #f2f2f2; }
+  .border-brand    { border-color: var(--border); }
+
+  .btn-primary { @apply bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-xl py-3; }
+  .chip        { @apply bg-primary-50 text-primary-700 px-3 py-1 rounded-full text-xs font-semibold; }
+  .card        { @apply bg-white rounded-2xl shadow-card border border-[var(--border)]; }
+  .section-title { @apply text-xl font-extrabold; }
+}
