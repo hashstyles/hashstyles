@@ -2,9 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import SearchBar from "../components/SearchBar";
-import { db, collection, getDocs, orderBy, query } from "../lib/firestore";
+import { db, collection, getDocs, orderBy, query, limit } from "../lib/firestore";
 import { useEffect, useState } from "react";
 import AppHeader from "../components/AppHeader";
+import type { Product } from "../types/product";
 
 
 type Category = { id: string; name: string; slug: string; image?: string; sort?: number };
@@ -12,12 +13,23 @@ type Category = { id: string; name: string; slug: string; image?: string; sort?:
 export default function HomePage(){
 
   const [cats, setCats] = useState<Category[]>([]);
+  const [newProducts, setNewProducts] = useState<Product[]>([]);
 
     useEffect(() => {
       (async () => {
         const q = query(collection(db, "categories"), orderBy("sort"));
         const snap = await getDocs(q);
         setCats(snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })));
+
+        // NEW ARRIVALS (just a teaser for home)
+    const qNew = query(
+      collection(db, "products"),
+      orderBy("createdAt", "desc"),
+      limit(4) // show 4/6/8 as you like
+    );
+    const snapNew = await getDocs(qNew);
+    setNewProducts(snapNew.docs.map(d => ({ id: d.id, ...(d.data() as Product) })));
+
       })();
     }, []);
   return (
@@ -31,7 +43,7 @@ export default function HomePage(){
         <div className="card overflow-hidden">
           <img
             className="w-full aspect-[16/9] object-cover"
-            src="https://plus.unsplash.com/premium_photo-1683121269108-1bd195cd18cf?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHNob3BwaW5nfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=500"
+            src="https://fashionsuggest.in/wp-content/uploads/2018/05/kurti-banner-compressed-1021x580.jpg"
           />
           <div className="p-4">
             <h2 className="text-xl font-bold">Elegance Redefined</h2>
@@ -56,24 +68,28 @@ export default function HomePage(){
 
       {/* New Arrivals (static teaser) */}
       <section className="px-4 mt-6 pb-24">
-        <h3 className="section-title mb-3">New Arrivals</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {/* {[
-            {t:"Floral Breeze Kurti", p:"49.99"},
-            {t:"Pastel Dream Set", p:"54.99"},
-            ].map(a=>(
-            <div key={a.t} className="card overflow-hidden">
-              <img className="w-full aspect-[3/4] object-cover"
-                   src="https://images.unsplash.com/photo-1542060748-10c28b62716a?q=80&w=1200&auto=format&fit=crop"/>
-              <div className="p-3">
-                <p className="font-medium">{a.t}</p>
-                <p className="text-sm">${a.p}</p>
-              </div>
-            </div>
-          ))} */}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="section-title">New Arrivals</h3>
+          <Link to="/new" className="text-sm font-semibold text-primary-700">See all</Link>
         </div>
-      </section>
 
+        {newProducts.length === 0 ? (
+          <div className="text-sm text-[color:var(--text-secondary)]">No new items yet.</div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {newProducts.map(p => (
+              <Link key={p.id} to={`/p/${p.slug}`} className="card overflow-hidden">
+                <img className="w-full aspect-[3/4] object-cover" src={p.images?.[0] || ""} alt={p.title}/>
+                <div className="p-3">
+                  <p className="font-medium">{p.title}</p>
+                  <p className="text-sm text-[color:var(--text-secondary)]">₹{p.price}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+      
       <BottomNav />
     </div>
   );

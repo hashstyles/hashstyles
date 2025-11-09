@@ -32,7 +32,12 @@ export default function NewInPage(){
           <Link key={p.id} to={`/p/${p.slug}`} className="card overflow-hidden">
             <img className="w-full aspect-[3/4] object-cover" src={p.images?.[0] || ""} />
             <div className="p-3">
-              <p className="font-medium">{p.title}</p>
+              <p
+                className="text-base font-medium line-clamp-2 min-h-[3rem]"  // reserve space for 2 lines
+                title={p.title}                                              // tooltip on hover
+              >
+                {p.title}
+              </p>
               <p className="text-sm text-[color:var(--text-secondary)]">₹{p.price}</p>
             </div>
           </Link>
