@@ -1,14 +1,42 @@
+// src/pages/WishlistPage.tsx
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useWishlist } from "../store/wishlist";
 import BottomNav from "../components/BottomNav";
+import { useWishlist } from "../store/wishlist";
 import type { Product } from "../types/product";
+import { db, collection, getDocs, query, where } from "../lib/firestore";
 
 export default function WishlistPage() {
-  // be defensive if provider/store hasn't populated yet
-  const wl = useWishlist(); // could be undefined in edge cases
-  type WLItem = { product: Product };
-  const items: WLItem[] = (wl as any)?.items ?? [];
+  const wl = useWishlist() as any; // store exposes { ids, has, toggle }
+  const ids: string[] = wl?.ids ?? [];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (!ids.length) { setProducts([]); return; }
+      setLoading(true);
+
+      // Firestore `in` supports up to 10 values
+      const chunks: string[][] = [];
+      for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i + 10));
+
+      const col = collection(db, "products");
+      const results: Product[] = [];
+      for (const slugs of chunks) {
+        const qy = query(col, where("slug", "in", slugs));
+        const snap = await getDocs(qy);
+        snap.forEach(d => results.push({ id: d.id, ...(d.data() as Product) }));
+      }
+
+      if (!cancelled) setProducts(results);
+      setLoading(false);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [ids]);
 
   return (
     <div className="bg-background-light min-h-screen font-display flex flex-col">
@@ -21,28 +49,32 @@ export default function WishlistPage() {
       </header>
 
       <main className="grid grid-cols-2 gap-4 p-4 pb-24 flex-1">
-        {items.length === 0 && (
+        {loading && (
+          <div className="col-span-2 p-6 card text-center">Loading…</div>
+        )}
+
+        {!loading && ids.length > 0 && products.length === 0 && (
+          <div className="col-span-2 p-6 card text-center">
+            No matching products found.
+          </div>
+        )}
+
+        {!loading && ids.length === 0 && (
           <div className="col-span-2 p-6 card text-center">
             No items in wishlist.
           </div>
         )}
 
-        {items.map(({ product }) => (
-          <Link
-            key={product.slug}
-            to={`/p/${product.slug}`}
-            className="card overflow-hidden"
-          >
+        {products.map((p) => (
+          <Link key={p.id} to={`/p/${p.slug}`} className="card overflow-hidden">
             <img
               className="w-full aspect-[3/4] object-cover"
-              src={product.images?.[0] || ""}
-              alt={product.title}
+              src={p.images?.[0] || ""}
+              alt={p.title}
             />
             <div className="p-3">
-              <p className="font-medium">{product.title}</p>
-              <p className="text-sm text-[color:var(--text-secondary)]">
-                ₹{product.price}
-              </p>
+              <p className="font-medium line-clamp-2" title={p.title}>{p.title}</p>
+              <p className="text-sm text-[color:var(--text-secondary)]">₹{p.price}</p>
             </div>
           </Link>
         ))}
